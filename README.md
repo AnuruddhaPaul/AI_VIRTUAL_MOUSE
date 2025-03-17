@@ -1,200 +1,179 @@
-# AI_VIRTUAL_MOUSE
-Hand Tracking Projects
+# AI Virtual Mouse
 
-A collection of computer vision applications using hand tracking technology. This repository includes a reusable hand tracking module and applications built on top of it.
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
-Table of Contents
+AI Virtual Mouse is a computer vision-based system that allows users to control their cursor using hand gestures captured by a webcam. This project leverages **MediaPipe** for hand tracking and **PyAutoGUI** for mouse control.
 
-Overview
+---
 
-Requirements
+## Table of Contents
 
-Installation
+- [Overview](#overview)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Gesture Controls](#gesture-controls)
+- [Code Explanation](#code-explanation)
+- [Customization](#customization)
+- [Troubleshooting](#troubleshooting)
+- [License](#license)
 
-Modules
+---
 
-HAND_TRACKING_MODULE.py
+## Overview
 
-VIRTUAL_PAINTER.py
+This project implements a virtual mouse controlled by hand gestures. Using your webcam, you can:
 
-Usage
+- **Move the cursor** by pointing with your index finger.
+- **Perform left-clicks** by bringing your index and middle fingers together.
+- **Perform right-clicks** by bringing your index finger and thumb together.
+- **Exit the program** by pressing the `q` key.
 
-Customization
+---
 
-Troubleshooting
+## Requirements
 
-Overview
+Ensure you have the following installed:
 
-This project leverages MediaPipe's hand tracking capabilities to create interactive applications controlled by hand gestures. The repository currently includes:
+- Python 3.6+
+- OpenCV
+- NumPy
+- MediaPipe
+- PyAutoGUI
+- A working webcam
 
-A hand tracking module for detecting and analyzing hand landmarks
+---
 
-A virtual painter application that lets you draw on screen using finger movements
-
-Requirements
-
-Python 3.6+
-
-OpenCV
-
-NumPy
-
-MediaPipe
-
-Webcam
-
-Installation
+## Installation
 
 Clone this repository:
 
-git clone https://github.com/yourusername/hand-tracking-projects.git
-cd hand-tracking-projects
+```bash
+git clone https://github.com/yourusername/ai-virtual-mouse.git
+cd ai-virtual-mouse
+```
 
 Install the required dependencies:
 
-pip install opencv-python numpy mediapipe
+```bash
+pip install opencv-python numpy mediapipe pyautogui
+```
+
+---
+
+## Usage
+
+Run the main script:
+
+```bash
+python AI_VIRTUAL_MOUSE.py
+```
+
+---
+
+## Gesture Controls
+
+| Gesture          | Action                 |
+|-----------------|------------------------|
+| Index finger up | Move cursor            |
+| Index + Middle fingers close | Left Click |
+| Index finger + Thumb close   | Right Click |
+| Press 'q' key  | Exit program            |
+
+---
+
+## Code Explanation
+
+### `AI_VIRTUAL_MOUSE.py`
+
+This script contains the main logic for hand gesture-based cursor control.
+
+- **Initialization and Setup:**
+  ```python
+  pyautogui.FAILSAFE = True  # Move mouse to corner to abort
+  pyautogui.PAUSE = 0.1  # Small delay between commands
+  ```
+  - `FAILSAFE`: Move the mouse to the corner to exit safely.
+  - `PAUSE`: Prevents excessive execution speed.
+
+- **Helper Functions:**
+  - `finger_up(landmarks, finger_idx)`: Checks if a specific finger is raised.
+  - `get_fingers_up(landmarks)`: Returns a list of raised fingers.
+  - `find_distance(p1, p2, img, draw, r, t)`: Calculates the Euclidean distance between two landmarks.
+
+- **Main Loop Features:**
+  - **Hand Detection:**
+    ```python
+    results = hands.process(imgRGB)
+    if results.multi_hand_landmarks:
+        hand_landmarks = results.multi_hand_landmarks[0]
+        mp_draw.draw_landmarks(img, hand_landmarks, mp_hands.HAND_CONNECTIONS)
+    ```
+  - **Mouse Movement:**
+    ```python
+    if fingers[1] and not any(fingers[2:]):
+        pyautogui.moveTo(clocX, clocY)
+    ```
+  - **Click Detection:**
+    ```python
+    if fingers[1] and fingers[2]:
+        pyautogui.leftClick()
+    if fingers[1] and fingers[0]:
+        pyautogui.rightClick()
+    ```
+
+### `HAND_TRACKING_MODULE.py`
+
+This module provides a reusable class for detecting and tracking hand movements.
+
+- **Hand Detection:**
+  ```python
+  def findHands(self, img, draw=True):
+      imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+      self.results = self.hands.process(imgRGB)
+      return img
+  ```
+- **Finger Tracking:**
+  ```python
+  def fingersUp(self):
+      return [1 if self.lmList[self.tipIds[i]][2] < self.lmList[self.tipIds[i] - 2][2] else 0 for i in range(1, 5)]
+  ```
+
+---
+
+## Customization
+
+You can adjust parameters to improve accuracy and responsiveness:
+
+- **Sensitivity:**
+  ```python
+  frameR = 100  # Adjust frame reduction size
+  smoothening = 7  # Adjust smoothening for movement
+  ```
+- **Click Distances:**
+  ```python
+  if length < 40:  # Left click threshold
+  if length < 80:  # Right click threshold
+  ```
+
+---
 
-Modules
+## Troubleshooting
 
-HAND_TRACKING_MODULE.py
+| Issue                  | Solution                                      |
+|------------------------|-----------------------------------------------|
+| Poor detection         | Ensure good lighting and a clear background  |
+| Erratic cursor movement | Increase smoothening value                  |
+| False clicks          | Increase click distance thresholds            |
+| No detection         | Check webcam functionality                    |
+| Performance issues   | Lower camera resolution or FPS                |
 
-A utility module that provides hand detection and tracking functionality.
+---
 
-Class: handDetector
+## License
 
-def __init__(self, mode=False, maxHands=2, detectionCon=0.5, trackCon=0.5):
+This project is licensed under the MIT License.
 
-Initializes MediaPipe hand detection with configurable parameters
+---
 
-mode: Processing mode (static image or video)
-
-maxHands: Maximum number of hands to detect
-
-detectionCon: Minimum detection confidence threshold
-
-trackCon: Minimum tracking confidence threshold
-
-findHands(img, draw=True)
-
-Converts image to RGB format
-
-Processes image to detect hands
-
-Draws landmarks and connections
-
-Returns processed image
-
-findPosition(img, handNo=0, draw=True)
-
-Extracts landmark positions
-
-Creates a bounding box around the hand
-
-Draws landmarks and bounding box
-
-Returns landmark list and bounding box
-
-fingersUp()
-
-Determines which fingers are raised
-
-Returns a list of 0s and 1s (0 = down, 1 = up) for each finger
-
-findDistance(p1, p2, img, draw=True, r=15, t=3)
-
-Calculates Euclidean distance between two landmarks
-
-Draws visualization lines and circles
-
-Returns distance, processed image, and point information
-
-VIRTUAL_PAINTER.py
-
-An application that uses the hand tracking module to create a virtual painting experience.
-
-Key Components
-
-Initialization:
-
-brushThickness = 15
-eraserThickness = 100
-drawColor = (255, 0, 255)
-xp, yp = 0, 0
-imgCanvas = np.zeros((720, 1280, 3), np.uint8)
-
-Sets brush and eraser thickness
-
-Loads header images with color selection options
-
-Initializes drawing canvas as a black image
-
-Selection Mode: (Raise both index and middle fingers)
-
-if fingers[1] and fingers[2]:
-    print("Selection Mode")
-
-Detects when fingers are in the header area
-
-Changes drawing color based on selected region
-
-Drawing Mode: (Raise only index finger)
-
-if fingers[1] and fingers[2] == False:
-    print("Drawing Mode")
-
-Draws lines on the canvas based on finger movement
-
-Uses a thicker line for eraser when black color is selected
-
-Usage
-
-Hand Tracking Module
-
-To use the hand tracking module in your own projects:
-
-import HAND_TRACKING_MODULE as htm
-
-detector = htm.handDetector()
-img = detector.findHands(img)
-lmList, bbox = detector.findPosition(img)
-fingers = detector.fingersUp()
-length, img, lineInfo = detector.findDistance(4, 8, img)
-
-Virtual Painter
-
-To run the virtual painter:
-
-python VIRTUAL_PAINTER.py
-
-Selection Mode: Raise both index and middle fingers to select a color
-
-Drawing Mode: Raise only index finger to draw
-
-Eraser Mode: Select black color and use drawing mode
-
-Exit: Press 'q' on the keyboard
-
-Customization
-
-Brush Size: Modify brushThickness (default: 15)
-
-Eraser Size: Modify eraserThickness (default: 100)
-
-Colors: Add more color options in the header images and update selection logic
-
-Canvas Size: Change dimensions in imgCanvas = np.zeros((720, 1280, 3), np.uint8)
-
-Header Layout: Modify selection mode conditions to match your header images
-
-Troubleshooting
-
-Poor Hand Detection: Ensure adequate lighting and a clean background
-
-Jerky Drawing: Adjust camera resolution or modify code for smoothing
-
-Missing Header Images: Verify the correct path and presence of images
-
-Performance Issues: Lower camera resolution or close resource-intensive applications
-
-Last updated: March 17, 2025
-
+_Last updated: March 17, 2025_
